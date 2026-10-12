@@ -39,6 +39,75 @@
     font-size: 11px;
     opacity: 0.5;
   }
+  .controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    padding: 16px 24px;
+    background: rgba(30, 32, 45, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(80, 100, 140, 0.15);
+  }
+  .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 140px;
+  }
+  .slider-group label {
+    font-size: 11px;
+    color: #5a6a8a;
+    letter-spacing: 0.5px;
+  }
+  .slider-group label span {
+    color: #8af0c8;
+    font-weight: bold;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(80, 100, 140, 0.3);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #6aecc0;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(106, 236, 192, 0.5);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #6aecc0;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px rgba(106, 236, 192, 0.5);
+  }
+  .btn-reset {
+    padding: 8px 20px;
+    background: rgba(106, 236, 192, 0.15);
+    border: 1px solid rgba(106, 236, 192, 0.4);
+    color: #8af0c8;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover {
+    background: rgba(106, 236, 192, 0.25);
+    box-shadow: 0 0 12px rgba(106, 236, 192, 0.3);
+  }
 </style>
 </head>
 <body>
@@ -57,19 +126,35 @@
 
 <canvas id="sim"></canvas>
 
+<div class="controls">
+  <div class="slider-group">
+    <label>摆长: <span id="val-len">200</span> px</label>
+    <input type="range" id="slider-len" min="100" max="350" value="200" step="1">
+  </div>
+  <div class="slider-group">
+    <label>重力: <span id="val-g">9.80</span> m/s²</label>
+    <input type="range" id="slider-g" min="1" max="25" value="9.8" step="0.1">
+  </div>
+  <div class="slider-group">
+    <label>阻尼: <span id="val-damp">0.0008</span></label>
+    <input type="range" id="slider-damp" min="0" max="0.010" value="0.0008" step="0.0001">
+  </div>
+  <button class="btn-reset" id="btn-reset">重置摆动</button>
+</div>
+
 <script>
 (() => {
   const canvas = document.getElementById('sim');
   const ctx = canvas.getContext('2d');
 
   const W = Math.min(window.innerWidth, 900);
-  const H = Math.min(window.innerHeight, 700);
+  const H = Math.min(window.innerHeight - 120, 600);
   canvas.width = W;
   canvas.height = H;
 
-  const L = 200;
-  const g = 9.8;
-  const DAMPING = 0.9992;
+  let L = 200;
+  let g = 9.8;
+  let DAMPING = 0.9992;
   const DT = 0.016;
   const BOB_RADIUS = 18;
 
@@ -81,6 +166,37 @@
 
   const trail = [];
   const MAX_TRAIL = 60;
+
+  const sliderLen = document.getElementById('slider-len');
+  const sliderG = document.getElementById('slider-g');
+  const sliderDamp = document.getElementById('slider-damp');
+  const valLen = document.getElementById('val-len');
+  const valG = document.getElementById('val-g');
+  const valDamp = document.getElementById('val-damp');
+  const btnReset = document.getElementById('btn-reset');
+
+  sliderLen.addEventListener('input', (e) => {
+    L = parseFloat(e.target.value);
+    valLen.textContent = L;
+    trail.length = 0;
+  });
+
+  sliderG.addEventListener('input', (e) => {
+    g = parseFloat(e.target.value);
+    valG.textContent = g.toFixed(2);
+  });
+
+  sliderDamp.addEventListener('input', (e) => {
+    const dampVal = parseFloat(e.target.value);
+    DAMPING = 1 - dampVal;
+    valDamp.textContent = dampVal.toFixed(4);
+  });
+
+  btnReset.addEventListener('click', () => {
+    theta = Math.PI / 4;
+    omega = 0;
+    trail.length = 0;
+  });
 
   function physics() {
     const alpha = -(g / L) * Math.sin(theta);
@@ -186,6 +302,8 @@
   }
 
   function updateHUD() {
+    document.getElementById('h-len').textContent = L + ' px';
+    document.getElementById('h-g').textContent = g.toFixed(2) + ' m/s²';
     document.getElementById('h-theta').textContent =
       (theta * 180 / Math.PI).toFixed(2) + '°';
     document.getElementById('h-omega').textContent =
