@@ -46,7 +46,7 @@
 <canvas id="sim"></canvas>
 
 <div class="controls">
-  <button class="btn-reset" onclick="resetAnimation()">重置摆动</button>
+  <button class="btn-reset">重置摆动</button>
 </div>
 
 <script>
@@ -72,6 +72,8 @@
     theta = Math.PI / 4;
     omega = 0;
   }
+
+  document.querySelector('.btn-reset').addEventListener('click', resetAnimation);
 
   function physics() {
     const alpha = -(g / L) * Math.sin(theta);
