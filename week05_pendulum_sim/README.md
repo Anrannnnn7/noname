@@ -97,11 +97,12 @@ week05_pendulum_sim/
 ## Git 提交历史
 
 ```
-a75fec8 docs(week05): complete experiment report with three reflections
-1e70916 feat(week05): add celestial presets with smooth gravity transition and localStorage persistence
-e1f89e0 fix(week05): resolve resetAnimation scope error with addEventListener
-4417d09 feat(week05): add bug practice page for scope debugging exercise
-d3a7fc1 feat(week05): add interactive control panel with sliders and reset button
-d19cb45 feat(week05): add pendulum simulator with canvas animation
-efb490c feat(week05): init pendulum experiment workspace
+4aff0e7 docs(week05): correct course name and update commit history list
+5094cc2 docs(week05): complete experiment report with three reflections
+866604f feat(week05): add celestial presets with smooth gravity transition and localStorage persistence
+e95a247 fix(week05): resolve resetAnimation scope error with addEventListener
+febd3ae feat(week05): add bug practice page for scope debugging exercise
+53a3723 feat(week05): add interactive control panel with sliders and reset button
+3a71039 feat(week05): add pendulum simulator with canvas animation
+076646e feat(week05): init pendulum experiment workspace
 ```
