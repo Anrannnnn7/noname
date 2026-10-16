@@ -8,7 +8,7 @@
 | 实验者姓名 | 郭梓萌 |
 | 学号 | 7902126161 |
 | 完成日期 | 2026-10-16 |
-| 课程名称 | 前端可视化与物理仿真 |
+| 课程名称 | 人机协同程序设计 |
 
 ## 项目说明
 
@@ -97,6 +97,7 @@ week05_pendulum_sim/
 ## Git 提交历史
 
 ```
+a75fec8 docs(week05): complete experiment report with three reflections
 1e70916 feat(week05): add celestial presets with smooth gravity transition and localStorage persistence
 e1f89e0 fix(week05): resolve resetAnimation scope error with addEventListener
 4417d09 feat(week05): add bug practice page for scope debugging exercise
