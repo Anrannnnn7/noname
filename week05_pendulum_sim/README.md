@@ -82,7 +82,7 @@
 
 ## GitHub 仓库链接
 
-[GitHub URL]
+https://github.com/Anrannnnn7/noname
 
 ## 目录结构
 
@@ -97,6 +97,7 @@ week05_pendulum_sim/
 ## Git 提交历史
 
 ```
+4cd3a72 docs(week05): sync commit history after email rewrite
 4aff0e7 docs(week05): correct course name and update commit history list
 5094cc2 docs(week05): complete experiment report with three reflections
 866604f feat(week05): add celestial presets with smooth gravity transition and localStorage persistence
