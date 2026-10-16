@@ -108,6 +108,34 @@
     background: rgba(106, 236, 192, 0.25);
     box-shadow: 0 0 12px rgba(106, 236, 192, 0.3);
   }
+  .presets {
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+  }
+  .btn-preset {
+    padding: 6px 16px;
+    background: rgba(80, 100, 140, 0.1);
+    border: 1px solid rgba(80, 100, 140, 0.3);
+    color: #7a8aaa;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-preset:hover {
+    background: rgba(106, 236, 192, 0.15);
+    border-color: rgba(106, 236, 192, 0.4);
+    color: #8af0c8;
+  }
+  .btn-preset.active {
+    background: rgba(106, 236, 192, 0.2);
+    border-color: rgba(106, 236, 192, 0.5);
+    color: #8af0c8;
+    box-shadow: 0 0 10px rgba(106, 236, 192, 0.2);
+  }
 </style>
 </head>
 <body>
@@ -142,6 +170,13 @@
   <button class="btn-reset" id="btn-reset">重置摆动</button>
 </div>
 
+<div class="presets">
+  <button class="btn-preset active" data-g="9.8">地球</button>
+  <button class="btn-preset" data-g="1.62">月球</button>
+  <button class="btn-preset" data-g="24.79">木星</button>
+  <button class="btn-preset" data-g="0.1">太空</button>
+</div>
+
 <script>
 (() => {
   const canvas = document.getElementById('sim');
@@ -152,9 +187,13 @@
   canvas.width = W;
   canvas.height = H;
 
-  let L = 200;
-  let g = 9.8;
-  let DAMPING = 0.9992;
+  const DEFAULTS = { L: 200, g: 9.8, k: 0.001 };
+  const saved = JSON.parse(localStorage.getItem('pendulum_params') || 'null');
+  const params = saved || DEFAULTS;
+
+  let L = params.L;
+  let g = params.g;
+  let DAMPING = 1 - params.k;
   const DT = 0.016;
   const BOB_RADIUS = 18;
 
@@ -167,6 +206,14 @@
   const trail = [];
   const MAX_TRAIL = 60;
 
+  function saveParams() {
+    localStorage.setItem('pendulum_params', JSON.stringify({
+      L: L,
+      g: g,
+      k: 1 - DAMPING
+    }));
+  }
+
   const sliderLen = document.getElementById('slider-len');
   const sliderG = document.getElementById('slider-g');
   const sliderDamp = document.getElementById('slider-damp');
@@ -175,27 +222,85 @@
   const valDamp = document.getElementById('val-damp');
   const btnReset = document.getElementById('btn-reset');
 
+  sliderLen.value = L;
+  sliderG.value = g;
+  sliderDamp.value = 1 - DAMPING;
+  valLen.textContent = L;
+  valG.textContent = g.toFixed(2);
+  valDamp.textContent = (1 - DAMPING).toFixed(4);
+
   sliderLen.addEventListener('input', (e) => {
     L = parseFloat(e.target.value);
     valLen.textContent = L;
     trail.length = 0;
+    saveParams();
   });
 
   sliderG.addEventListener('input', (e) => {
     g = parseFloat(e.target.value);
     valG.textContent = g.toFixed(2);
+    saveParams();
+    updatePresetButtons();
   });
 
   sliderDamp.addEventListener('input', (e) => {
     const dampVal = parseFloat(e.target.value);
     DAMPING = 1 - dampVal;
     valDamp.textContent = dampVal.toFixed(4);
+    saveParams();
   });
 
   btnReset.addEventListener('click', () => {
     theta = Math.PI / 4;
     omega = 0;
     trail.length = 0;
+  });
+
+  let gravityTransition = null;
+
+  function smoothGravity(targetG) {
+    const startG = g;
+    const startTime = performance.now();
+    const duration = 300;
+
+    gravityTransition = { startG, targetG, startTime, duration };
+  }
+
+  function updateGravityTransition() {
+    if (!gravityTransition) return;
+
+    const { startG, targetG, startTime, duration } = gravityTransition;
+    const elapsed = performance.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+
+    g = startG + (targetG - startG) * eased;
+    sliderG.value = g;
+    valG.textContent = g.toFixed(2);
+
+    if (progress >= 1) {
+      g = targetG;
+      gravityTransition = null;
+      saveParams();
+    }
+  }
+
+  const presetBtns = document.querySelectorAll('.btn-preset');
+
+  function updatePresetButtons() {
+    presetBtns.forEach(btn => {
+      const btnG = parseFloat(btn.dataset.g);
+      btn.classList.toggle('active', Math.abs(btnG - g) < 0.01);
+    });
+  }
+
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetG = parseFloat(btn.dataset.g);
+      smoothGravity(targetG);
+      presetBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
   });
 
   function physics() {
@@ -311,6 +416,7 @@
   }
 
   function frame() {
+    updateGravityTransition();
     physics();
 
     ctx.fillStyle = '#1a1a24';
